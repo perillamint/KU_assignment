@@ -1,0 +1,49 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {DT, ADT, Object 의 차이}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {Data Type}
+\(~~\)Data type: 컴퓨터의 Linear 한 메모리를 인간이 보다 쉽게 사용할 수 있게 하기 위해, 메모리 영역을 추상화하여 보다 쉽게 값을 쓸 수 있도록 추상화 한 구조.
+\vspace{\baselineskip}
+
+코드 구현 - C:
+\lstinputlisting [style=customc]{ds-adt-dt.c}
+\vspace{\baselineskip}
+코드 출력:
+\lstinputlisting [style=customtxt]{ds-adt-dt.txt}
+
+\section {Abstracted Data Type}
+\(~~\)Abstracted Data Type: Data Type 들을 한번 더 추상화시켜, 자료를 다루는 방법을 새롭게 정의한 것.
+ADT에서는, ADT 가 추상화시킨 내부의 데이터에 직접적으로 접근할 수 없고, 추상화된 접근을 정의한 ADT 의 API를 통해서만 접근이 가능하며, 이 ADT의 API는 ADT내부에 어떤 형식으로\linebreak
+데이터가 저장되는지를 알지 못해도 ADT 내부의 데이터에 ``간접적으로'' 접근할 수 있도록 한다.
+
+\vspace{\baselineskip}
+코드 구현 - C:
+\lstinputlisting [style=customc]{ds-adt-adt.c}
+\vspace{\baselineskip}
+코드 출력:
+\lstinputlisting [style=customtxt]{ds-adt-adt.txt}
+\vspace{\baselineskip}
+\section {Object}
+\(~~\)Object: Abstract Data Type (혹은 클래스) 에 정의된 것을 실제로 메모리 위에 올려서, 데이터를 기록할 수 있는 ``상태'' 를 가질 수 있게 된 것. 각각의 객체는 자신의 상태를 가지며, 이 상태는 객체를 찍어낸 ADT 에 (혹은 클래스) 정의된 API를 통해 바뀐다.
+% 치킨먹고싶다
+\vspace{\baselineskip}
+코드 구현 - CPP:
+\lstinputlisting [style=customc]{ds-adt-obj.cpp}
+코드 출력:
+\lstinputlisting [style=customtxt]{ds-adt-obj.txt}
+\end {document}

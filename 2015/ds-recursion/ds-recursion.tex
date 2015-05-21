@@ -1,0 +1,70 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Recursion 이 존재할 때 알고리즘의 시간복잡도 계산}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{서론}
+재귀를 사용하는 알고리즘의 시간 복잡도를 점화식을 이용해 일반항을 구함으로서 계산한다.
+\section{Factorial}
+구현
+\lstinputlisting [style=customc]{factorial.c}
+시간복잡도 계산
+\\\\
+이 팩토리얼을 계산하는 함수는 $ n = 0 $ 일때 종료된다. \\
+이는
+\begin {equation}
+  T(0) = O(1)
+\end {equation}
+\begin {equation}
+  T(n) = O(1) + T(n - 1)
+\end {equation}
+과 같이 시간 복잡도에 대한 점화식을 세울 수 있다. \\
+이 점화식은
+\begin {align*}
+  T(n) &= O(1) + \underbrace { O(1) + T(n-2) }_{ T(n-1) } \\
+       &= O(1) + O(1) + \underbrace { O(1) + T(n-3)}_{ T(n-2) }\\
+       &= k * O(1) + T(n - k) \\
+       &= n * O(1) \\
+       &= O(n)
+\end {align*}
+가 되므로, 재귀호출로 팩토리얼을 계산하는 알고리즘의 시간 복잡도는 $ O(n) $ 임을 알 수 있다.
+\section{Hanoi tower}
+구현
+\lstinputlisting [style=customc]{hanoi.c}
+시간복잡도 계산
+\\\\
+하노이 타워 알고리즘은 남은 고리의 갯수가 0일때 종료된다. \\
+이는
+\begin {equation}
+  T(0) = O(1)
+\end {equation}
+\begin {equation}
+  T(n) = O(1) + 2*T(n-1)
+\end {equation}
+과 같이 식이 세워진다. \\
+이 점화식은
+\begin {align*}
+  T(n) &= O(1) + 2*T(n-1) \\
+       &= O(1) + \underbrace {2*O(1) + 4*T(n-2)}_{T(n-1)} \\
+       &= O(1) + 2*O(1) + \underbrace {4*O(1) + 8*T(n-3)}_{T(n-2)} \\
+       &= (n^2 - 1) * O(1) \\
+       &= O(n^2)
+\end {align*}
+가 되어 하노이 타워의 시간복잡도는 $ O(n^2) $ 가 된다.
+
+\section {결론}
+이와 같이 재귀적 호출이 들어 있는 알고리즘의 시간 복잡도는 정규식을 이용해서, 일반항을 구하면 시간 복잡도를 구할 수 있다.
+\end {document}

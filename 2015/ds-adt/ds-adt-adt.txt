@@ -1,0 +1,10 @@
+queue push: 1
+queue push: 42
+queue push: 73
+queue push: 423
+queue push: -1
+queue pop: 1
+queue pop: 42
+queue pop: 73
+queue pop: 423
+queue pop: -1

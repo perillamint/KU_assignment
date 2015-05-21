@@ -1,0 +1,37 @@
+
+cwithoutmain:     file format elf64-x86-64
+
+
+Disassembly of section .plt:
+
+00000000004002f0 <syscall@plt-0x10>:
+  4002f0:	ff 35 3a 02 20 00    	pushq  0x20023a(%rip)        # 600530 <_GLOBAL_OFFSET_TABLE_+0x8>
+  4002f6:	ff 25 3c 02 20 00    	jmpq   *0x20023c(%rip)        # 600538 <_GLOBAL_OFFSET_TABLE_+0x10>
+  4002fc:	0f 1f 40 00          	nopl   0x0(%rax)
+
+0000000000400300 <syscall@plt>:
+  400300:	ff 25 3a 02 20 00    	jmpq   *0x20023a(%rip)        # 600540 <_GLOBAL_OFFSET_TABLE_+0x18>
+  400306:	68 00 00 00 00       	pushq  $0x0
+  40030b:	e9 e0 ff ff ff       	jmpq   4002f0 <syscall@plt-0x10>
+
+Disassembly of section .text:
+
+0000000000400310 <_start>:
+  400310:	55                   	push   %rbp
+  400311:	48 89 e5             	mov    %rsp,%rbp
+  400314:	48 83 ec 10          	sub    $0x10,%rsp
+  400318:	48 c7 45 f8 56 03 40 	movq   $0x400356,-0x8(%rbp)
+  40031f:	00 
+  400320:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+  400324:	b9 0e 00 00 00       	mov    $0xe,%ecx
+  400329:	48 89 c2             	mov    %rax,%rdx
+  40032c:	be 01 00 00 00       	mov    $0x1,%esi
+  400331:	bf 01 00 00 00       	mov    $0x1,%edi
+  400336:	b8 00 00 00 00       	mov    $0x0,%eax
+  40033b:	e8 c0 ff ff ff       	callq  400300 <syscall@plt>
+  400340:	be 00 00 00 00       	mov    $0x0,%esi
+  400345:	bf 3c 00 00 00       	mov    $0x3c,%edi
+  40034a:	b8 00 00 00 00       	mov    $0x0,%eax
+  40034f:	e8 ac ff ff ff       	callq  400300 <syscall@plt>
+  400354:	c9                   	leaveq 
+  400355:	c3                   	retq   

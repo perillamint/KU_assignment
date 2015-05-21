@@ -1,0 +1,54 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {OS 수업과제 02}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {COFF vs ELF}
+UNIX 시스템에서 ELF 실행 파일 포멧은, COFF파일 포멧과 다르게 실행 파일에 대한 메타정보 섹션을 가지고 있다. 이 메타정보 섹션을 이용해서 바이너리에 대한 디버깅 정보나, 서명 정보와 같은 것을 담을 수 있다.
+특히 디버깅에 있어서는 COFF의 경우 Section size 제한으로 인해 디버깅 정보를 많이 담기 힘든데 반해 ELF의 경우 더 많은 크기의 정보를 담을 수 있어서 단순한 심볼 뿐만이 아니라 더 자세한 디버깅 정보를 담을 수 있다.
+
+\section {일반적 .text 와 .data segment 크기}
+보통의 작은 command-line 유틸리티의 경우 readelf 를 이용해 섹션 정보를 읽어보면 
+\lstinputlisting [style=customtxt]{ls.txt}
+와 같이 .text 의 크기가 63961 byte 이고 .bss + .data 의 크기는 4308 byte 이다. \\
+또 Firefox 와 같은 매우 큰 프로그램의 경우에는
+\lstinputlisting [style=customtxt]{firefox-nightly.txt}
+와 같은 결과가 나온다.\\
+여기서 .text 의 크기는 110376 byte 이고 .bss + .data 의 크기는 1576 byte 이다.\\
+이는 IA-32 아키텍쳐에서 주어지는 가상 메모리 영역인 4GiB 보다는 훨씬 작은 크기이다.\\
+따라서, heap 과 stack 이 자랄 공간은 아주 큰 프로그램이라도 충분히 주어진다고 볼 수 있다.\\
+
+\section {User app without main()}
+우리가 일반적으로 쓰는 C 소스 코드는 startfile 을 통해 초기화를 거치고, 이후 main() 함수가 호출\linebreak
+되는 구조이다. 이러한 프로그램은 보통 이것과 같다.\\
+cwithmain.c
+\lstinputlisting [style=customc]{cwithmain.c}
+하지만, 항상 startfile 을 통해서만 프로그램을 시동할 수 있는 것은 아니다. 다음과 같은 코드는\\
+cwithoutmain.c
+\lstinputlisting [style=customc]{cwithoutmain.c}
+libc 초기화 루틴을 통해 불리는 일반적인 main() 대신, 실제 바로 프로그램이 로드되는 \_start() 를 사용해 작성되었다. 이 프로그램을 컴파일하기 위해서는 gcc 에 -nostartfiles 옵션을 주어 libc 초기화 루틴을 코드에 포함하지 않고, 바로 \_start() 를 사용하도록 작성하여야 한다. \\
+-nostartfiles 옵션이 없을 경우에는 
+\lstinputlisting [style=customtxt]{builderror.log}
+와 같이 링커가 startfile 과 작성된 코드의 main()을 링크할 수 없다는 오류를 띄운다. \\
+또한, 이 -nostartfiles 옵션을 주고 컴파일된 경우와 일반적으로 startfile 을 포함해서 컴파일한 경우\\
+를 objdump -d 로 디스어셈블해서 비교하면 \\
+cwithoutmain
+\lstinputlisting [style=customtxt]{cwithoutmain.txt}
+cwithmain
+\lstinputlisting [style=customtxt]{cwithmain.txt}
+
+과 같이 startfile 이 함께 들어가서 main() 을 부르는 코드가 추가된 것을 볼 수 있다.
+\end {document}

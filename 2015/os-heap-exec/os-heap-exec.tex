@@ -1,0 +1,52 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Heap execution}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{목적}
+힙에 ELF 파일을 로드하고, .text 위의 함수를 호출함으로서 힙을 실행한다.
+
+\section{objdump}
+objdump 는 오브젝트 파일의 정보를 보여주는 프로그램이다. objdump 를 이용해서 ELF 의 섹션 정보를 알아낼 수 있다.
+
+\section{mmap}
+mmap 은 파일을 메모리에 매핑할 때 사용하는 시스템 콜이다. 여기에서는, PROT\_EXEC 를 가진 메모리 영역을 할당받기 위해 mmap 을 MAP\_ANONYMOUS 플래그와 함께 사용하여 실행 가능한 힙 영역을 할당받는데 사용한다.
+
+\section{왜 malloc 말고 mmap 인가?}
+malloc 은 heap-management library 를 통해서 brk() 와 같은 시스템 콜을 통해 받아온 메모리
+영역을 관리해주는 libc 의 함수이다. 이를 이용해 받아 온 메모리는 기본적으로 PROT\_EXEC 가
+설정되어 있지 않고, 힙 매니지먼트 라이브러리의 특성상 페이지에 정렬(Align) 되어있지 않다.
+
+AMD64 시스템이나 ix86 시스템 중 PAE 를 지원하는 시스템의 경우 PTE 의 MSB 를 NX-bit 로 사용하게 된다. 이 플래그가 켜져 있는 페이지의 경우, CPU 는 해당 페이지를 실행하는 것을 거부하고 SIGSEGV 를 발생시킨다. 이를 해결하려면, 해당 페이지에 PROT\_EXEC 를 설정해 실행 가능함으로 만들어A주어야하는데, malloc() 으로 할당 받은 메모리는 정렬되어있지 않기 때문에, 페이지 단위로 메모리를 관리하는 OS의 특성상, 정확히 할당받은 영역에만 실행 권한을 줄 수 없다.
+
+이를 해결하기 위해 mmap() 을 사용하여 정렬되어있고, PROT\_EXEC 를 가진 실행 가능한 페이지를 할당받아서 사용한다.
+
+\section{함수포인터}
+함수 포인터는 메모리에 위치한 함수를 가리키는 포인터이다. 이를 일반 함수를 다루듯이 호출하면, 컴파일러는 함수를 호출하기 전 준비를 하고, 해당 함수를 CALL 하게 된다.
+
+\section{구현}
+gcc 로 컴파일되어 나온 링킹 전의 바이너리는 ELF 형태이다. 이 ELF 바이너리를 파싱해서 .symtab 과 .text 영역을 추출 후 심볼 테이블을 이용해서 함수의 오프셋을 계산, PROT\_EXEC 
+옵션을 가지고 매핑 된 힙 영역에 파일을 로드하고, 함수 포인터를 이용해 힙을 실행한다.
+
+\section{코드}
+answerofeverything.c
+\lstinputlisting [style=customc]{answerofeverything.c}
+elfloader.c
+\lstinputlisting [style=customc]{elfloader.c}
+\section{출력}
+Output
+\lstinputlisting [style=customtxt]{output.txt}
+\end {document}

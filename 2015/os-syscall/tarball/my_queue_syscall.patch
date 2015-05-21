@@ -1,0 +1,170 @@
+From 1f27a2eb687aa99c1a5b124d0ea534d276c0f19b Mon Sep 17 00:00:00 2001
+From: perillamint <perillamint@Legolas.(none)>
+Date: Mon, 23 Mar 2015 22:02:39 +0900
+Subject: [PATCH] my_queue syscall
+
+---
+ 1st_assign/Makefile                |  4 +++
+ 1st_assign/main.c                  | 71 ++++++++++++++++++++++++++++++++++++++
+ Makefile                           |  2 +-
+ arch/x86/include/asm/unistd_32.h   |  2 ++
+ arch/x86/include/asm/unistd_64.h   |  4 +++
+ arch/x86/kernel/syscall_table_32.S |  2 ++
+ include/linux/syscalls.h           |  3 ++
+ 7 files changed, 87 insertions(+), 1 deletion(-)
+ create mode 100644 1st_assign/Makefile
+ create mode 100644 1st_assign/main.c
+
+diff --git a/1st_assign/Makefile b/1st_assign/Makefile
+new file mode 100644
+index 0000000..c434300
+--- /dev/null
++++ b/1st_assign/Makefile
+@@ -0,0 +1,4 @@
++obj-y := 1st_assign.o
++
++# in-kernel queue implementation.
++1st_assign-objs += main.o
+diff --git a/1st_assign/main.c b/1st_assign/main.c
+new file mode 100644
+index 0000000..87b5127
+--- /dev/null
++++ b/1st_assign/main.c
+@@ -0,0 +1,71 @@
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++
++typedef struct element_s {
++  int data;
++  struct element_s *next;
++} element_t;
++
++element_t *front;
++element_t *rear;
++
++asmlinkage void sys_my_enqueue(int a)
++{
++  element_t *elem = kmalloc(sizeof(element_t), GFP_KERNEL);
++
++  printk(KERN_DEBUG "sys_my_enqueue\n");
++  
++  if(elem == NULL)
++  {
++    printk(KERN_ERR "sys_my_enqueue - kmalloc() failed!\n");
++    return;
++  }
++
++  elem -> next = NULL;
++  elem -> data = a;
++
++  if(front != NULL)
++    front -> next = elem;
++
++  front = elem;
++  
++  if(rear == NULL)
++  {
++    rear = front;
++  }
++}
++
++asmlinkage int sys_my_dequeue(void)
++{
++  int ret = 0;
++  
++  printk(KERN_DEBUG "sys_my_dequeue\n");
++  if(rear != NULL)
++  {
++    element_t *delelem = rear;
++    
++    ret = rear -> data;
++    rear = rear -> next;
++    
++    kfree(delelem);
++  }
++  else
++  {
++    //There is no way to express queue underflow "safely".
++    //Crashing whole system using panic()? I don't think it is great.
++    //Just return -1 in this case.
++
++    printk(KERN_WARNING "sys_my_dequeue - Queue underflow!\n");
++    ret = -1;
++  }
++
++  return ret;
++}
++
++void __init init_myqueue(void)
++{
++  front = NULL;
++  rear = NULL;
++}
+diff --git a/Makefile b/Makefile
+index 78f9271..38f995d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -481,7 +481,7 @@ init-y		:= init/
+ drivers-y	:= drivers/ sound/ firmware/
+ net-y		:= net/
+ libs-y		:= lib/
+-core-y		:= usr/
++core-y		:= usr/ 1st_assign/
+ endif # KBUILD_EXTMOD
+ 
+ ifeq ($(dot-config),1)
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index beb9b5f..3544bdf 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -343,6 +343,8 @@
+ #define __NR_rt_tgsigqueueinfo	335
+ #define __NR_perf_event_open	336
+ #define __NR_recvmmsg		337
++#define __NR_my_enqueue         338
++#define __NR_my_dequeue         339
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+index ff4307b..a837d4d 100644
+--- a/arch/x86/include/asm/unistd_64.h
++++ b/arch/x86/include/asm/unistd_64.h
+@@ -663,6 +663,10 @@ __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
+ __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
+ #define __NR_recvmmsg				299
+ __SYSCALL(__NR_recvmmsg, sys_recvmmsg)
++#define __NR_my_enqueue                         300
++__SYSCALL(__NR_my_enqueue, sys_my_enqueue)
++#define __NR_my_dequeue                         301
++__SYSCALL(__NR_my_dequeue, sys_my_dequeue)
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index 8b37293..5b054f0 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -337,3 +337,5 @@ ENTRY(sys_call_table)
+ 	.long sys_rt_tgsigqueueinfo	/* 335 */
+ 	.long sys_perf_event_open
+ 	.long sys_recvmmsg
++	.long sys_my_enqueue
++	.long sys_my_dequeue
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 13ebb54..e78290b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -826,4 +826,7 @@ asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
+ 			unsigned long fd, unsigned long pgoff);
+ asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
+ 
++asmlinkage void sys_my_enqueue(int a);
++asmlinkage int sys_my_dequeue(void);
++
+ #endif
+-- 
+2.3.4
+

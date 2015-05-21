@@ -1,0 +1,60 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {RAM vs. Disk vs. Keyboard \\ 데이터를 전송하는데 걸리는 시간 비교}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {서론}
+시스템을 이루는 각 장치들의 속도를 비교해 봄으로서 왜 시스템이 유저 입력이 있을 때 멈추지 않는 지를 알아본다.
+\section {RAM}
+메모리가 데이터를 쓰는 데 걸리는 시간은
+\begin {equation}
+  \frac {\mathrm{TransferSize}}{\mathrm{Clock} * \mathrm{DataTransferPerClock} * \mathrm{DataBusWidth} * \mathrm{Channel}}
+\end {equation}
+과 같이 계산할 수 있다.
+DDR3-1600 듀얼 채널 구성을 가정하면 전송 최소단위는 128bit 이다.
+따라서 한 바이트를 전송하려면, 메모리가 한번 동작해야 하고, 이를 이용해 1byte 를 쓰는 데 걸리\linebreak
+는 시간을 계산하면(7byte 낭비)
+\begin {equation}
+  \frac {128}{200*10^6 * 2 * 64 * 2} \mathrm{second} \approx 2.5\mathrm{nanosecond}
+\end {equation}
+이 걸린다.
+\section {Disk}
+OS는 AHCI 를 사용해서 SATA 장치와 데이터를 교환한다. 데이터를 전송할 때에는, Frame Information Structure 를 사용해서 데이터와 명령을 포장해서 보내는데, 이 데이터 구조는
+\lstinputlisting [style=customc]{datafis.c}
+와 같다.
+따라서 1byte 를 보내는 데 드는 데이터 FIS 의 크기는
+8byte 가 되고(3Byte 는 낭비), SATA 3.0 의 대역폭은 6Gbit/s\cite{annjansen00} 이므로
+\begin {equation}
+\frac {8}{6 * 10^9} \mathrm{second} \approx 1.33 \mathrm{nanosecond}
+\end {equation}
+가 된다.
+\section {Keyboard}
+키보드는 PS/2 포트를 사용하는 것으로 가정한다.
+PS/2 방식의 키보드는 10-16.7 KHz 의 클럭 속도로 i8042 PS/2 컨트롤러와 통신한다.\cite {adamchapweske00} PS/2 컨트롤러는
+start bit + 8bit + odd parity + end bit 를 수신한 뒤 데이터를 처리해서 인터럽트를 발생시킨다.
+PS/2 를 통해서 한 메시지가 전송되기까\linebreak
+지는,
+\begin {equation}
+\frac{11}{16700} \mathrm{second} \approx 660 \mathrm{microsecond}
+\end {equation}
+만큼의 시간이 필요하다.
+또한, 키보드가 보내는 모든 메시지가 유저 인풋에 대한 정보는 아니기에, 실제 발생하는 IRQ 빈도는 더 낮다고 볼 수 있다.
+\section {결론}
+유저 입력이 들어오는 키보드의 속도는 다른 장비들에 비해 현저히 낮아 시스템의 동작을 방해할 정도는 아니다. 또한, 현대 CPU 내에는 캐싱 메커니즘이 존재하므로, 메모리 액세스가 동작하는 속도가 더 빨라지는 것과, 큰 데이터를 한 명령에 실어 보낼 수 있는 것을 감안하면, 디스크 I/O 가 SATA 3.0 최대 속도로 동작한다 하더라도 시스템을 방해할 정도는 아니라는 것을 알 수 있었다.
+
+\bibliographystyle {plain}
+\bibliography {computer-engineering,sataio}
+\end {document}

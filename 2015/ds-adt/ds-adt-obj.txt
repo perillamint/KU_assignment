@@ -1,0 +1,6 @@
+Each different object has different "state"
+They are all came from same Chicken class
+but they produce different output due to their state
+Fried chicken - 10000 KRW
+Yangnyum chicken - 11000 KRW
+Garlic chicken - 12000 KRW

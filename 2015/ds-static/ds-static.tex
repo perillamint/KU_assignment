@@ -1,0 +1,39 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Static variable, Static function}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {static variable}
+C 언어에서 static variable 은 지역 변수와 같은 위치에 선언됬더라도, 전역 변수처럼 동작하는 변수이다.
+지역 변수와 같은 scope 안에서 보이지만, call stack 이 아닌 data 영역에 존재하기 때문에, 해당 스코프를 벗어나도 값이 초기화되지 않는다. 또한, 변수 초기화도 .data 섹션에 들어 있는 값을 사용하기에, 매번 함수가 불릴 때마다 초기화되지 않고, 프로그램이 로드될 때 초기화된다.
+컴파일된 결과를 보면, static variable 은 심볼 테이블에 로컬 바인드로 엔트리가 존재하지만, 일반 로컬 변수는 스택에 존재하기 때문에, 심볼 테이블에 존재하지 않는 것을 알 수 있다.
+
+C 파일
+\lstinputlisting [style=customc]{static_var.c}
+readelf 결과
+\lstinputlisting [style=customtxt]{static_var_readelf.txt}
+
+\section {static function}
+C 언어에서 static function 은 한 translaton unit 내에서만 보이는 함수이다. 이를 이용해 컴파일한 ELF 오브젝트의 심볼 테이블을 보면 다음과 같이 static function 은 LOCAL 바인드여서, 해당 오브젝트 안에서만 참조가 가능하고, non-static function 은 GLOBAL 바인드여서, 다른 오브젝트에서도 참조가 가능하다.
+
+C 파일
+\lstinputlisting [style=customc]{static_func.c}
+readelf 결과
+\lstinputlisting [style=customtxt]{static_func_readelf.txt}
+
+이를 이용하면, C 에서 빈약하게나마 encapsulation을 구현할 수 있다. 
+또한, static 선언된 함수는 다른 함수와 같은 이름을 가질 수 있으며, 이 때는 static 선언된 함수가 먼저 호출되고, 일반 함수는 해당 static 함수가 보이지 않는 곳에서 사용되게 된다.
+\end {document}

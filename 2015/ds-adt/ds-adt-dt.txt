@@ -1,0 +1,7 @@
+All bits in chData is zero.
+int = 0, float = 0.000000, long = 0
+nData will be 42. but fData will have different value then nData.
+It means each data type defines "how to read the value" from memory.
+int = 42, float = 0.000000, long = 42
+Now, lData have different value then nData
+int = 42, float = 0.000000, long = 180388626474

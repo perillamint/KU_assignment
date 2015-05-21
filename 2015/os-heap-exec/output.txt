@@ -1,0 +1,12 @@
+[perillamint@erestor os-heap-exec]$ ./elfloader 
+ELF EHDR
+e_phnum = 0
+e_shnum = 11
+e_phentsize = 0
+e_shentsize = 64
+e_phoff = 0
+e_shoff = 552
+ELF loaded at      : 0x7f6e14a26000
+Function loaded at : 0x7f6e14a26040
+42
+[perillamint@erestor os-heap-exec]$ 

@@ -1,0 +1,33 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Linux 의 task\_struct 크기 조사}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {task\_struct}
+리눅스 커널의 task\_struct 는 프로세스의 메모리 매핑과 프로그램 카운터, 가동 상태, 자식-부모 관계, ptrace 목록, 쓰레드 목록 등을 가지고 있는 구조체이다. 각 프로세스는 이 구조체에 저장\linebreak
+되며, 스케쥴러는 task\_struct 로 이루어진 큐에서 - CFS 의 경우 정확히는 Red-black tree 로 구성된 태스크 ``타임라인'' - 태스크 상태를 되살리고, Time slice 를 소비하면 다시 프로세스를 정지시키고 큐에 넣는 일을 반복한다.
+\section {task\_struct 의 크기 구하기}
+task\_struct 의 크기를 구하기 위해 커널 모듈을 사용하여 커널 안에서 sizeof(struct task\_struct) 를 실행하고 그 결과를 커널 로그에 나타내도록 한다. 모듈을 사용하는 이유는, 커널 전체 재 컴파일 없이도 모듈을 삽입,제거함으로서 재 부팅 없이 커널에 코드를 로드해서 동작시킬 수 있게 하기 위함이다.
+\section {코드}
+Makefile
+\lstinputlisting [style=customtxt]{makefile-module}
+module main
+\lstinputlisting [style=customc]{main.c}
+dmesg output
+\lstinputlisting [style=customtxt]{dmesg.log}
+\section {결론}
+실제로 구조체의 크기를 측정해본 결과 Linux 2.6.35.6 기준으로 대략 5.76KiB 정도를 차지하는 것을 알 수 있었다.
+\end {document}
