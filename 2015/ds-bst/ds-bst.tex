@@ -1,0 +1,72 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {BST와 Linked list 의 실행 시간 비교}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {Insert operation}
+BST 의 경우 Insert 동작 실행시, BST 의 조건에 맞는 노드를 찾아 내려가게 된다. 이는 탐색 과정과 같으며, 이는 평균적으로 $ O(\log(n)) $ 의 시간 복잡도가 소요된다. 반면, Linked list 의 경우, 단지 리스트에 해당 노드를 추가하면 되기에, 추가에는 $ O(1) $ 의 상수 시간복잡도가 소요된다.
+
+하지만, 데이터가 정렬되어 있을 경우, BST에서 검색 동작은, Linked list 의 그것과 같게 되어, 시간복잡도가 $ O(n) $ 으로 느려지게 된다.
+
+\section {Search operation}
+BST의 경우, 트리 자체로 2진 탐색을 할 수 있다. 이는 이진 트리가 데이터 탐색을 하는 데 있어, Linked list 보다 일반적으로 더 빠른 성능을 낼 수 있음을 의미한다. 이진 트리는 트리가 Balanced 에 가까운 일반적인 상태에서는 $ O(\log(n)) $ 의 시간복잡도를 가진다.
+
+반면, Linked list 는, 리스트의 앞부터 끝까지 탐색을 진행하면서, 해당 데이터가 있는지를 확인하는 방식이므로, 검색에 있어, $ O(n) $ 의 시간복잡도를 가지게 된다.
+
+무작위 데이터를 이용한 측정은 다음과 같았다.
+\lstinputlisting [style=customtxt]{benchmark.dat}
+
+이를 그래프로 그리고 Fitting 해 보면, 두 경우 모두, 각 자료구조의 시간복잡도에 맞는 것을 알 수 있다. 
+
+\begin {figure}
+  \centering
+  \input {linkedlist-graph.tex}
+  \caption {Linked list 의 검색 동작 시간}
+  \label{fig:linkedlist}
+\end {figure}
+
+\begin {figure}
+  \centering
+  \input {bst-graph.tex}
+  \caption {BST 의 검색 동작 시간}
+  \label{fig:bst}
+\end {figure}
+
+\section {벤치마크에 사용된 코드}
+테스트 환경:
+OS: Gentoo Linux 
+C compiler: GCC 4.9.2 with -std=c99
+Make: GNU Make 4.1
+에서 테스트 했으며, 코드는 C99 표준을 이용하여 작성되었습니다.
+
+메인 소스 코드
+\lstinputlisting [style=customc]{project/integerapp.c}
+
+이 코드에서는, ADT의 함수들을 static 으로 선언하고, 해당 함수들의 Function pointer 를 구조체에 담아, 객체를 통해 메서드를 호출하도록 구성하였습니다. BST 의 경우, 교과서의 구현과 같고, Linked list 의 경우, 재귀 호출을 사용하는 구현으로 바꾸어 구현하였습니다.
+
+BST ADT
+\lstinputlisting [style=customc]{project/bst.h}
+
+LinkedList ADT
+\lstinputlisting [style=customc]{project/linkedlist.h}
+
+BST 구현
+\lstinputlisting [style=customc]{project/bst.c}
+
+LinkedList 구현
+\lstinputlisting [style=customc]{project/linkedlist.c}
+
+\end {document}
