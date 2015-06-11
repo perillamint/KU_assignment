@@ -9,9 +9,12 @@
 
 int getmemstat(statm_entry_t *statm, int entrycnt)
 {
-  const int pagesize = sysconf(_SC_PAGESIZE);
+  //Page size in KiB.
+  const int pagesize = sysconf(_SC_PAGESIZE) / 1024;
   char buf[BUFSIZE];
   int ret;
+  long int wssdetect;
+  
   for (int i = 0; i < entrycnt; i++)
     {
       ret = lseek(statm[i].fd, 0, SEEK_SET);
@@ -33,6 +36,8 @@ int getmemstat(statm_entry_t *statm, int entrycnt)
 	}
 
       buf[ret] = 0; //Terminate it with NULL.
+
+      wssdetect = statm[i].Rss;
       
       sscanf(buf, "%ld %ld %ld %ld %ld %ld %ld",
 	     &statm[i].size,
@@ -50,6 +55,11 @@ int getmemstat(statm_entry_t *statm, int entrycnt)
       statm[i].lib   *= pagesize;
       statm[i].data  *= pagesize;
       statm[i].dt    *= pagesize;
+      
+      if(wssdetect != statm[i].Rss)
+	statm[i].Wss = '*';
+      else
+	statm[i].Wss = ' ';
     }
 
   return 0;

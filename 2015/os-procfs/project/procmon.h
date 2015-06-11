@@ -13,6 +13,7 @@ typedef struct {
   long lib;
   long data;
   long dt;
+  char Wss;
 } statm_entry_t;
 
 #define BUFSIZE 1024
