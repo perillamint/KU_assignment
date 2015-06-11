@@ -1,0 +1,24 @@
+파일 설명:
+
+메모리 측정 로그
+memlog-systemd.dat
+memlog-firefox.dat
+memlog-emacs.dat
+
+GNUplot 플로팅용 스크립트
+gnuplot-command
+plot_all_dat.sh
+
+plot_all_dat.sh 실행 시,
+memlog-[appname]-with-vm.eps
+memlog-[appname]-with-vm.tex
+memlog-[appname]-without-vm.eps
+memlog-[appname]-without-vm.tex
+
+가 GNUplot 을 이용해 생성되게 된다.
+
+프로젝트 파일
+os3_2013210101.tar.gz
+
+보고서 파일
+os3_2013210101.pdf

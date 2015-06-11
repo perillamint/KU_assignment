@@ -1,0 +1,22 @@
+datafile = dataname.'.dat'
+
+set style line 1 lc rgb '#A5944d' lt 1 lw 2 pt 7 ps 1.5
+set style line 2 lc rgb '#4d63a5' lt 1 lw 2 pt 7 ps 1.5
+set style line 3 lc rgb '#a54242' lt 1 lw 2 pt 7 ps 1.5
+
+set key outside
+
+set size 1.2,0.6
+
+set terminal epslatex color colortext input
+#set terminal latex
+set output dataname.'-with-vm.tex'
+
+plot datafile using 1:2 title 'size' with lines ls 1,\
+datafile using 1:3 title 'Rss' with lines ls 2,\
+datafile using 1:4 title 'shared' with lines ls 3
+
+set output dataname.'-without-vm.tex'
+
+plot datafile using 1:3 title 'size' with lines ls 2,\
+datafile using 1:4 title 'Rss' with lines ls 3

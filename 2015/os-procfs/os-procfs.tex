@@ -31,8 +31,70 @@ Demanded paging 을 사용하는 시스템은 프로그램 전체를 메모리�
 \section {Swap partition}
 페이지 폴트를 처리하기 위해 메모리를 할당해야하지만, 남은 프레임이 없을 경우엔, victim frame 을 정해서 이를 secondary storage 로 옮기고, victim frame 이 있던 프레임에 요청된 데이터를 로드하게 된다. 이 과정에 쓰이는 secondary storage 공간이 스왑 파티션이다.
 \section {코드 설명}
-\section {실행 결과 분석}
-% 여기에 사진이 들어가야 한다.
-% 그래프 그릴 것.
+테스트 환경:
+OS: Gentoo Linux
+C Compiler: GCC 4.9.2 with --std=gnu99
+Make: GNU Make 4.1
 
+작성한 프로그램은 /proc/[pid]/statm 파일을 일정 주기 (여기서는 0.5초) 마다 읽어와서, 파싱한 뒤, 결과를 보여주도록 작성되었습니다.
+더불어 /proc/[pid]/comm 파일에서 프로세스의 이름을 가져와 로깅 파일 이름과, 화면 표시에 사용되도록 작성되었습니다.
+\lstinputlisting [style=customc]{project/procmon.c}
+\lstinputlisting [style=customc]{project/procmon.h}
+\lstinputlisting [style=customc]{project/getmemstat.c}
+\lstinputlisting [style=customc]{project/getmemstat.h}
+
+\section {실행 결과 분석}
+\subsection {프로그램 실행 사진}
+\begin {figure}[h]
+  \centering
+  \includegraphics [width=120mm]{screenshot.png}
+  \caption {실행 스크린샷}
+  \label{fig:systemd}
+\end {figure}
+
+\newpage
+\subsection{백그라운드 프로세스 - systemd (init)}
+시스템에서 systemd는 시스템을 초기화하고 데몬을 시동하는 역활을 한다. 이에서 일상적 상황(데몬 재시동 요청이 없는 상황) 에서는 systemd 는 백그라운드에 sleep 상태로 머무르게 됨을 의미한다. 따라서 systemd 의 메모리 소모량은 측정 시간 동안 크게 변하지 않을 것을 예상할 수 있고, 결과도 추측과 같게 나온다.
+
+\begin {figure}[h]
+  \centering
+  \input {memlog-systemd-with-vm.tex}
+  \caption {Systemd 의 메모리 기록}
+  \input {memlog-systemd-without-vm.tex}
+  \caption {Systemd 의 메모리 기록 (가상 메모리 크기 제외)}
+  \label{fig:systemd}
+\end {figure}
+
+\newpage
+\subsection{memory-intensive 한 프로세스 - firefox}
+Firefox 의 경우, 웹 페이지를 로드하고, 방문한 페이지 중 일부를 빠른 접근을 위해 메모리에 캐시하고, 자바스크립트를 구동하고, DOM 이벤트를 처리하는 등의 역활을 한다. 이는 동작하면서 많은 메모리를 사용하고, 더불어 잦은 메모리 크기의 변동이 발생할 것을 의미한다. 또한, 이 메모리 변화량의 대부분은, 함수 콜을 통한 스택에 위치하기보다는, heap에 위치하게 된다.
+
+\begin {figure}[h]
+  \centering
+  \input {memlog-firefox-with-vm.tex}
+  \caption {Firefox 의 메모리 기록}
+  \input {memlog-firefox-without-vm.tex}
+  \caption {Firefox 의 메모리 기록 (가상 메모리 크기 제외)}
+  \label{fig:firefox}
+\end {figure}
+
+\newpage
+\subsection{기타 프로세스 - emacs}
+Emacs 의 경우, 텍스트 버퍼와, lisp 실행을 제외하면, 메모리 변화가 적은 상황이다. 실제 결과에서, Rss 의 크기는, elisp 이 실행되고, 텍스트 버퍼의 내용이 변할 때만 변하는 것으로 나타났으며, Firefox 의 경우에 비해 매우 작은 메모리 사용량 변화를 나타내었다.
+
+\begin {figure}[h]
+  \centering
+  \input {memlog-emacs-with-vm.tex}
+  \caption {Emacs 의 메모리 기록}
+  \input {memlog-emacs-without-vm.tex}
+  \caption {Emacs 의 메모리 기록 (가상 메모리 크기 제외)}
+  \label{fig:emacs}
+\end {figure}
+
+\newpage
+\section {Working set 의 추측}
+Firefox 의 경우에서, Rss 의 증가량의 평균을 내어보면, 192KiB 정도가 나오게 된다. 이는 Working set 이 192KiB 정도일 때, Firefox 를 구동하는데, 페이징 폴트를 낮게 유지하며, 가동될 수 있음을 추측해 볼 수 있다.
+
+\section {과제 중 발생한 문제점과 그 해결}
+C99 에서 usleep() 이 지원되지 않아, 이를 지원하기 위해 GNU C99 dialect 로 컴파일 옵션을 바꾸어야 하는 일이 있었다.
 \end {document}
