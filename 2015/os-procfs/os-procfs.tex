@@ -1,0 +1,38 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {OS 3차 과제 - 가상메모리의 이해와 procfs 를 통한 분석}
+\input {../../reportauthor.tex}
+\maketitle
+
+% Requirement: Mark Wss change
+% Poll measurement 500msec.
+% Display process during 1 sec when Wss changed.
+
+\section {리눅스의 Paging}
+리눅스는 가상 메모리를 3단계 페이징 기법(AMD64 시스템과, 몇몇 ARM 시스템은 4단계)을 통해 물리 프레임으로 매핑한다. 여기에서 모든 가상 메모리가 리얼 메모리로 매핑되어야 할 필요는 없는데, 이를 이용한 페이징 기법이 Demanded paging 이다. 이는 프로세스가 요청한 모든 가상 메모리를 프레임에 매핑하지 않고, 실제 데이터를 접근할 때, 페이지를 프레임에 할당하는 방식으로 메인 메모리와 secondary storage 를 활용하여 물리 메모리의 요구량을 줄이게 된다.
+\section {Working set}
+주어진 시간동안 프로세스가 필요로 하는 메모리를 Working set 이라 한다. Working set 은 프로세스가 실행되는 과정에서 바뀌게 되며, 적당한 시간 간격을 잡으면, working set 은 Locality 를 나타내게 된다. 이는 working set 에 해당하는 메모리들이 해당되는 window 동안 메모리에 남아 있다면, 프로세스는 페이지 폴트를 처리할 필요 없이 진행할 수 있다.
+\section {Thrashing}
+Demanded paging 을 사용하는 시스템은 프로그램 전체를 메모리에 올리지 않고, secondary storage 에서 필요할 때마다 필요한 page 를 이동시키게 된다. 만약, 이 때 시스템의 메모리가 프로세스가 필요로 하는 Working set size 보다 작다면, 프로세스는 연산을 진행하면 지속적으로 Working set 에 포함된 데이터가 secondary storage 로 스왑되게 된다. 이는 지속적인 페이지 폴트를 유발, Page fault handler 가 secondary storage 로 이동된 프레임을 다시 메모리로 불러오게 되고, 이는 CPU의 활용율을 낮추게 된다.
+
+이 페이지 폴트를 처리하는 시간이 프로그램이 실제로 실행되는 시간보다 길어지게 되면, 이를 Thrashing 이라고 한다 
+\section {Swap partition}
+페이지 폴트를 처리하기 위해 메모리를 할당해야하지만, 남은 프레임이 없을 경우엔, victim frame 을 정해서 이를 secondary storage 로 옮기고, victim frame 이 있던 프레임에 요청된 데이터를 로드하게 된다. 이 과정에 쓰이는 secondary storage 공간이 스왑 파티션이다.
+\section {코드 설명}
+\section {실행 결과 분석}
+% 여기에 사진이 들어가야 한다.
+% 그래프 그릴 것.
+
+\end {document}
