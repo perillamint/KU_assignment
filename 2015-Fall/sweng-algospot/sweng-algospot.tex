@@ -1,0 +1,185 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Heap execution}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section {Algospot 문제 - URI decoding}
+\subsection {문제}
+URI (Uniform Resource Identifier) is a compact string used to identify or name resources on the Internet. Some examples of URI are below:
+
+\begin{itemize}
+\item http://icpc.baylor.edu.cn/
+\item mailto:foo@bar.org
+\item ftp://127.0.0.1/pub/linux
+\item readme.txt
+\end{itemize}
+
+When transmitting *URI*s through the Internet, we escape some
+special characters in *URI*s with percent-encoding. Percent-encoding
+encodes an ASCII character into a percent sign ("%") followed by a
+two-digit Hexadecimal representation of the ASCII number. The other
+characters are not touched in the encoding process. The following
+table shows the special characters and their corresponding encodings:
+\newline
+
+\begin {tabular}{| l | c | r |}
+  \hline
+  `` '' & \%20 \\ \hline
+  ``!'' & \%21 \\ \hline
+  ``\$'' & \%24 \\ \hline
+  ``\%'' & \%25 \\ \hline
+  ``('' & \%28 \\ \hline
+  ``)'' & \%29 \\ \hline
+  ``*'' & \%2a \\ \hline
+\end{tabular}
+\linebreak
+\newline
+\newline
+
+Note that the quotes are for clarity only.
+
+Write a program which reverses this process.
+
+\subsection {입력}
+The first line of the input file will contain the number of test cases
+
+\begin{equation}
+  C (1 \le C \le 100)
+\end{equation}
+
+The following $C$ lines will each contain a test case —
+which is the percent-encoded URI. Their length will be at most 80.
+
+\subsection {출력}
+Print one line for each test cases — the decoded original URI.
+
+\section {명세}
+\subsection {개요}
+이 프로그램은 주어진 percent-encoded URI 스트링을 복원하는 프로그램이다.
+
+\subsection {디코딩 정의}
+프로그램은 주어진 데이터의 percent-encoded URI 부분을 원래의 문자열로 복원해야 한다.
+
+Percent-encoded URI 의 규칙은 다음과 같다.
+
+\begin{itemize}
+\item ASCII 범위 밖의 단어나, 예약어를 전송해야 할 때, 이 문자는 \%<8BIT HEX CODE> 와 같이 인코딩된다. % 뒤 2 바이트만을 숫자로 취급하여 디코드하도록 한다.
+\item ASCII 범위 안의 단어 또한, 인코딩 될 수 있다. 이 또한, 같은 방법으로 디코딩 되어야 한다. - From RFC 3986 section 2.3, 문제에는 언급되지 않음.
+\end{itemize}
+
+URI 표준의 예약어는 다음과 같다.
+
+``:'', ``/'', ``?'', ``\#'', ``['', ``]'', ``@'', ``!'', ``\$'',
+``\&'', ``{'}'', ``('', ``)'', ``*'', ``+'', ``,'', ``;'', ``=''
+
+\subsection {입력 정의}
+프로그램에는 stdin 을 통해, $C + 1$ 줄의 입력이 주어진다. $C$ 는 다음과 같은 조건을 만족한다.
+
+\begin{equation}
+  C (1 \le C \le 100)
+\end{equation}
+\newline
+\newline
+입력의 첫 줄 이후엔, 각 줄마다 프로그램이 변환해야 할 데이터가 주어진다.
+
+입력의 줄은, <CR>, <LF>, <CR><LF> 와 같은 뉴라인 문자(열)을 통해 구분된다. - 문제에는 언급되지 않았으나, 추가됨.
+
+입력은 80byte 를 초과하지 않는다.
+
+\subsection {출력 정의}
+프로그램은 stdout 을 통해 입력을 받은 데이터를 가공한 것을 출력한다.
+
+프로그램은 각 줄마다, 처리한 데이터의 결과를 출력한다.
+
+출력의 줄 구분은 <LF> 뉴라인 문자를 이용해 구분한다.
+
+출력의 순서는 입력된 데이터의 순서와 같다.
+
+\subsection {종료 정의}
+프로그램은, 변환 중에 위의 규칙으로 처리할 수 없는 경우를 발견할 경우,
+exit status 에 적절한 오류 코드를 반환해야 한다.
+
+만일 그렇지 아니할 경우, exit status 로 0 을 반환해야 한다.
+
+\subsection {추가 제약사항}
+문제의 취지를 위해, Rust uri::decode 와 같은 라이브러리는 사용하지 않도록 한다.
+
+\section {프로그램 설계}
+\subsection {사용 언어}
+프로그램을 Rust-lang 을 이용해 작성한다.
+\subsection {구조}
+URI 클래스를 만들어, URI 클래스가, URI 하나를 디코딩하는 구조로 작성한다.
+\subsection {디코딩 방식}
+URI 클래스가 생성될 때, 생성자로 인코드된 URI를 받는다. 이후, get\_original\_uri
+함수가 호출되면, 인코드된 URI 를 \% 를 이용해 Tokenizing 한 후, \%로 시작하는
+토큰들에 대해,
+
+\begin{itemize}
+\item 토큰의 길이가 2 이상인지
+\item percent-encoded string 이 올바른 16진수인지
+\end{itemize}
+를 체크한 뒤, 조건을 만족하지 못한다면, Malformed URI 이므로, panic!
+을 호출해 프로그램을 종료한다.
+
+만약 모든 조건을 만족했다면, percent-encoded URI 를 해당하는 바이트로
+변환한 뒤, 이를 문자열로 바꾸어 return 한다.
+
+\subsection {입력 방식}
+stdin 을 개행 문자로 Tokenizing 하여 읽어주는 reader 객체를 사용,
+첫 행에서, 테스트 조건의 길이를 읽고, 이후 한 줄씩 읽어서, URI 객체를
+생성한 뒤, 벡터에 넣는다.
+
+\subsection {출력 방식}
+URI 객체가 들어있는 벡터를 이터레이션하며, get\_original\_uri 메서드를
+호출해 반환된 값을 println! 을 이용, 한 줄에 한 개씩 출력한다.
+
+\section {구현}
+\lstinputlisting [style=customrs]{uridecode.rs}
+
+\section {테스트}
+구현까진 마쳤지만, 스펙 분석의 오류 혹은, Rust unsafe 의 잘못된
+사용으로 인한 메모리 관리 문제로 추정되는 문제로 인해, AlgoSpot 의
+테스트를 통과하는데는 실패하였다.
+
+\begin {figure}[h]
+  \centering
+  \includegraphics [width=120mm]{failure.png}
+  \caption {Failure}
+  \label{fig:failure}
+\end {figure}
+
+\section {테스트 - 업데이트}
+구현에 오류가 있는 것으로 밝혀졌다. 오류가 있던 부분은, stdin 에서
+입력을 받아올 때, Tailing newline 을 제거하지 않았던 것이 문제가 되었다.
+이에, L82 의 코드를
+\newline
+\newline
+let mut uri = URI::new(uri\_string);\newline
+\newline
+에서\newline
+\newline
+let mut uri = URI::new(uri\_string.trim().to\_string());\newline
+\newline
+으로 수정하였다.
+
+\begin {figure}[h]
+  \centering
+  \includegraphics [width=120mm]{success.png}
+  \caption {Success}
+  \label{fig:success}
+\end {figure}
+
+\end {document}
