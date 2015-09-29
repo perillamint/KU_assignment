@@ -1,0 +1,47 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+\begin {document}
+
+\title {전화번호부 프로그램의 요구사항}
+\input {../../reportauthor.tex}
+\maketitle
+
+\clearpage
+\section{기능적 요구사항}
+\begin{itemize}
+\item 프로그램의 인터페이스는, 대화형 CUI 어플리케이션으로 한다.
+\item 전화번호와, 이름, 그리고 전화번호의 분류를 저장할 수 있는 기능이 있어야 한다.
+  \begin{itemize}
+  \item 한 사람은, 각기 다른 분류의 여러 전화번호를 가질 수 있다.
+  \item 이름이 같으나, 실제로는 다른 사람이 존재할 수 있다.
+  \item 이름은, 성과 이름을 나누지 않고, 하나로 저장한다.
+  \end{itemize}
+\item 이름에 해당하는 전화번호를 검색할 수 있는 기능이 있어야 한다.
+\item 전화번호부에 저장된 이름의 앞 글자로, 색인을 만들어 줄 수 있는 기능이 있어야 한다.
+\item 전화번호부를 파일로 저장하고, 불러올 수 있어야 한다.
+  \begin {itemize}
+  \item 파일로 저장할 경우, 저장할 파일 이름을 사용자에게 입력 받는다.
+  \item 파일을 불러올 경우, 프로그램의 대화형 셸에서, 열기 명령과 파일명을 받는 식으로 구현한다.
+  \item 만약, 옵션이 아닌 프로그램의 명령 행 인자가 있을 경우, 이를 파일명으로 취급하여 불러온다.
+  \end {itemize}
+\item 전화번호부 프로그램의 처리 문자 정의
+  \begin {itemize}
+  \item 프로그램은 유니코드 문자열을 다룰 수 있어야 한다.
+  \item 전화번호에는, 국가코드를 위한 +, 전화번호를 분리하기 위한 -, 숫자가 들어갈 수 있다.
+  \end{itemize}
+\item 명령 요구사항
+  \begin{itemize}
+  \item 명령 중, h, help 는, 프로그램의 사용법을 출력하는 명령으로 예약한다.
+  \item 명령은 대소문자를 구분하지 않되, 명령에 주어진 데이터는 대소문자를 구분한다.
+  \end{itemize}
+\end{itemize}
+\end {document}
