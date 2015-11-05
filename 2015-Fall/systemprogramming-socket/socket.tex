@@ -1,0 +1,33 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Socket sharing}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{소켓의 생성}
+소켓은 socket(2) 시스템 콜을 호출함으로서 생성되게 된다. 이 시스템 콜의 결과로, 소켓의 파일 디스크립터가 반환되게 되고, 이는 해당 프로세스에 열린 파일의 형태로 소켓을 제공하게 된다.
+
+이 결과로, 소켓이 프로세스에 종속되게 됨을 의미하고, 프로세스에게는 파일의 형태로 추상화된 네트워크 소켓이 주어지게 된다.
+
+\section{다중 접속 서버의 생성}
+다중 접속 서버의 경우, fork(2) 콜을 이용해서 프로세스의 복제를 만드는 기법이 전통적으로 사용되어 왔다. fork(2) 콜을 사용함으로서 해당 프로세스의 열린 파일을 포함한 기타 상태를 공유하는 복제를 생성하게 된다.
+
+이를 이용하여, 부모 프로세스는, 소켓에 bind() 한 뒤, listen() 해서, 새 접속을 기다리게 되고, 새 접속이 들어오게 되면, fork() 를 하여, 자식 프로세스가 복제된 파일 디스크립터를 가지고, 입출력을 하여 통신을 하게 된다. 따라서, 부모 프로세스는 계속 새 연결을 기다리면서, 새 자식 프로세스를 fork() 해 낼 수 있게 된다.
+
+\section{부록 - fork() 를 사용한 HTTP 서버 예제 코드}
+inc0gnito 발표에서 사용했던 서버 코드 - \url{https://github.com/perillamint/K-HomeWRT-hack/}
+\lstinputlisting [style=customc]{granelver.c}
+
+\end {document}

@@ -1,0 +1,84 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Ext3 과 NILFS2 의 Block I/O 패턴 비교}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{Ext3 과 NILFS2 의 비교}
+Ext3 파일 시스템은 저널링 파일 시스템이다. Ext3 은 기본적으로 저널에 메타정보와 파일 내용을 기록 후, 이를 디스크 영역에 적어넣는다. 반면,
+NILFS2 파일 시스템은 Log-structed 파일 시스템이다. 이는 로그를 연속된 블럭으로 저장하는 방식으로 데이터를 적어넣는다.
+
+이 두 파일 시스템의 차이가 만들어내는 Block write 패턴은, 아래의 벤치마크 결과에서 Block I/O 패턴의 차이로 나타나게 된다.
+\section{Block I/O 결과}
+\subsection{사용된 환경}
+\setlength{\parindent}{0cm}
+툴체인
+\begin{lstlisting}[style=customtxt]
+  arm-eabi-4.6 from Android Open-source Project
+\end{lstlisting}
+원본 커널 소스 코드 리버전
+\begin{lstlisting}[style=customtxt]
+Tizen TRATS2 kernel code commit c349d3966a91b3036d9e4a16a7849ab23d1e6435
+(branch tizen_2.3, retrieved from Tizen gerrit code review, identical as TA version)
+\end{lstlisting}
+iozone 옵션
+\begin{lstlisting}[style=customtxt]
+  iozone -a -i 0 -n 32m -g 32m -r 16k
+\end{lstlisting}
+FS image size: 각각 256MiB
+\newpage
+\subsection{결과}
+\subsubsection{Ext3}
+\begin{figure} [h!]
+    \caption{ext3}
+    \begin{center}
+      \resizebox{0.5\textwidth}{!}{
+        \input{iozone_ext3.tex}
+      }
+    \end{center}
+\end{figure}
+Ext3 의 경우, 저널링 파일 시스템의 특성을 Block I/O 결과에서 나타내고 있다. 블럭에 쓰기를 할 때, 2블럭씩 저널에 쓴 뒤, 이를 실제 디스크 영역에 작성하게 된다.
+
+따라서, 파일 쓰기 그래프가 순차적으로 쓰여지지 않고, 끊어지게 된다.
+\subsubsection{NILFS2}
+\begin{figure} [h!]
+  \caption{nilfs2}
+  \begin{center}
+    \resizebox{0.5\textwidth}{!}{
+      \input{iozone_nilfs2.tex}
+    }
+  \end{center}
+\end{figure}
+NILFS2 의 경우, Log-structed 파일 시스템의 특성을 나타내고 있다. NILFS write 의 경우, segctord 데몬이, 쓰기 요청을 모아, 약 248블럭씩 로그에 지속적으로 작성하는 것을 볼 수 있다.
+
+이는 Ext3 의 Block I/O 패턴과 다르게, 순차적으로 파일이 쓰여지는 패턴을 보이게 된다.
+
+\newpage
+\section{부록}
+\subsection{소스 코드}
+\lstinputlisting [style=customc]{srcs/bio-benchmark.c}
+\subsection{Patchset}
+\setlength{\parindent}{0cm}
+0001-Fix-compile-error-due-to-missing-sys-ioccom.h.-https.patch
+\lstinputlisting [style=diff]{patchset/0001-Fix-compile-error-due-to-missing-sys-ioccom.h.-https.patch}
+0002-Samsung-s-fallback-does-not-work.-Since-we-does-not-.patch
+\lstinputlisting [style=diff]{patchset/0002-Samsung-s-fallback-does-not-work.-Since-we-does-not-.patch}
+0003-sudo-without-password-might-be-bad-idea.patch
+\lstinputlisting [style=diff]{patchset/0003-sudo-without-password-might-be-bad-idea.patch}
+0004-path-fix.patch
+\lstinputlisting [style=diff]{patchset/0004-path-fix.patch}
+0005-Block-I-O-benchmark-code.patch
+\lstinputlisting [style=diff]{patchset/0005-Block-I-O-benchmark-code.patch}
+\end {document}

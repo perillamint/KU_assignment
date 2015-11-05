@@ -1,0 +1,42 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {리눅스 커널에서의 파일시스템 In-memory object 와 On-disk object 의 조사}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{파일시스템의 계층 구조}
+%Citated from http://www.tldp.org/LDP/lki/lki-3.html
+리눅스 커널은 다양한 파일 시스템을 지원하기 위해, Virtual File System 이라는 레이어를 파일시스템 구현과, 실제 시스템 콜 사이에 가지고 있다. Virtual File System 은, 각각의 FS 마다, super\_block 객체를 제공한다. (Linux 4.2 /include/linux/fs.h L1289)
+
+이 super\_block 객체는, inode 리스트, dentry 리스트, 세마포어, quota 정보 등, 파일시스템의 정보를 담고 있게 된다.
+
+\subsection{파일시스템 부분의 구현}
+파일시스템 구현체는, super\_operations 객체를 자신이 구현한 파일시스템 오퍼레이션 함수로 채워서 super\_block 객체를 만들게 된다. 이 파일시스템이 구현한 super\_operations 객체는, super\_block 객체를 변환하는 API를 제공한다. VFS는 유저의 시스템 콜을 super\_operations 객체의 콜들로 바꿔서 호출하고, 이는 In-memory object를 변화시키고, On-disk object 와 sync 하는 등의 동작을 하게 된다.
+
+\section{VFS의 dentry 캐싱 구현}
+파일시스템은, 디렉토리 참조를 가속화하기 위해, 디스크에 존재하는 구조를, dentry 의 형태로 캐싱하게 된다. 이는 super\_block 객체 안의 dentry 객체에 의해 관리된다.(Linux 4.2 /include/linux/dcache.h L108)
+
+이 dentry 객체는, dentry와, inode 캐싱에 관한 정보를 담고 있게 된다.
+
+\subsection{파일시스템 부분의 구현}
+이 dentry 객체는, super\_block 객체와 유사하게, dentry\_operations 라는 객체를 가지고 있다. 이 또한, 파일시스템 구현체에 의해 구현되며, 이는 On-disk object 와 dentry 의 동기화를 유지하는 API 를 제공하게 된다.
+
+\section{VFS의 파일 구현}
+파일시스템에서 열린 파일은, file 객체에 보관되게 된다. 이 객체 안에, 열린 파일의 리스트가 들어 있고, file\_operations 라는 API를 담고 있는 객체를 제공한다. (Linux 4.2 /include/linux/fs.h L839)
+
+\subsection{파일시스템 부분의 구현}
+파일시스템 구현체는 file\_operations API 를 구현해, 파일 동작을 실행하게 된다.
+
+\end {document}

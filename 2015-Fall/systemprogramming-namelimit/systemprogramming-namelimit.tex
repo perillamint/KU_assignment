@@ -1,0 +1,24 @@
+%!TEX TS-program = xelatex
+
+\documentclass {article}
+
+\input {../../commonpackages.tex}
+
+%\setmainfont {NanumMyeongjo}
+\setmainfont {UnBatang}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+\input {../../lststyles.tex}
+
+\begin {document}
+
+\title {Ext3 과 NTFS 의 파일 네임 리밋 조사.}
+\input {../../reportauthor.tex}
+\maketitle
+
+\section{Ext3의 파일명 길이 제한}
+Ext3 의 파일명의 길이 제한은 /fs/ext3/ext3.h L824 (Linux 4.2 기준) 에 위치한 EXT3\_MAX\_NAME\_LEN 매크로에 255바이트로 정의되어있다. 이를 검사하는 부분은, /fs/ext3/namei.c buffer\_head 함수와, ext3\_lookup 함수에서 검사를 하게 된다.
+
+\section{NTFS의 파일명 길이 제한}
+NTFS 의 파일명의 길이 제한은 /fs/ntfs/ntfs.h L43 (Linux 4.2 기준) 에 위치한 NTFS\_CONSTANTS enum 안 NTFS\_MAX\_NAME\_LEN 에 255바이트로 정의되어있다. 이를 검사하는 부분은, /fs/ntfs/unistr.c 의 ntfs\_nlstoucs 함수에서 검사하게 된다.
+\end {document}

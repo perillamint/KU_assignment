@@ -1,0 +1,57 @@
+From 70a74658c32d21e981eb2fe9188bfa91220ab7f1 Mon Sep 17 00:00:00 2001
+From: perillamint <perillamint@gmail.com>
+Date: Wed, 23 Sep 2015 20:40:25 +0900
+Subject: [PATCH 1/4] Samsung's fallback does not work. Since we does not use
+ SVN, setting SVN_REV to 0.
+
+---
+ drivers/media/video/samsung/mali/Makefile      | 3 ++-
+ drivers/media/video/samsung/mali_r3p0/Makefile | 3 ++-
+ drivers/media/video/samsung/ump/Makefile       | 3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/video/samsung/mali/Makefile b/drivers/media/video/samsung/mali/Makefile
+index 0ce60a3..684d48c 100644
+--- a/drivers/media/video/samsung/mali/Makefile
++++ b/drivers/media/video/samsung/mali/Makefile
+@@ -275,7 +275,8 @@ ifeq ($(PANIC_ON_WATCHDOG_TIMEOUT),1)
+ endif
+ 
+ # Get subversion revision number, fall back to 0000 if no svn info is available
+-SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++#SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++SVN_REV=0
+ 
+ EXTRA_CFLAGS += -DSVN_REV=$(SVN_REV)
+ EXTRA_CFLAGS += -DSVN_REV_STRING=\"$(SVN_REV)\"
+diff --git a/drivers/media/video/samsung/mali_r3p0/Makefile b/drivers/media/video/samsung/mali_r3p0/Makefile
+index a9d6d81..df0f21f 100644
+--- a/drivers/media/video/samsung/mali_r3p0/Makefile
++++ b/drivers/media/video/samsung/mali_r3p0/Makefile
+@@ -311,7 +311,8 @@ endif
+ mali-$(CONFIG_VIDEO_MALI400MP_GLOBAL_LOCK) += \
+ 	linux/mali_slp_global_lock.o
+ # Get subversion revision number, fall back to 0000 if no svn info is available
+-SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++#SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++SVN_REV=0
+ 
+ EXTRA_CFLAGS += -DSVN_REV=$(SVN_REV)
+ EXTRA_CFLAGS += -DSVN_REV_STRING=\"$(SVN_REV)\"
+diff --git a/drivers/media/video/samsung/ump/Makefile b/drivers/media/video/samsung/ump/Makefile
+index f429c40..da2213b 100644
+--- a/drivers/media/video/samsung/ump/Makefile
++++ b/drivers/media/video/samsung/ump/Makefile
+@@ -87,7 +87,8 @@ EXTRA_CFLAGS += $(INCLUDES) \
+ 		
+ 		
+ # Get subversion revision number, fall back to 0000 if no svn info is available
+-SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++#SVN_REV:=$(shell ((svnversion | grep -qv exported && echo -n 'Revision: ' && svnversion) || git svn info | sed -e 's/$$$$/M/' | grep '^Revision: ' || echo ${MALI_RELEASE_NAME}) 2>/dev/null | sed -e 's/^Revision: //')
++SVN_REV=0
+ 		
+ EXTRA_CFLAGS += -DSVN_REV=$(SVN_REV)
+ EXTRA_CFLAGS += -DSVN_REV_STRING=\"$(SVN_REV)\"
+-- 
+2.4.9
+

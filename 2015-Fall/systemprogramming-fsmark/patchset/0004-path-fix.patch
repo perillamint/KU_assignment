@@ -1,0 +1,33 @@
+From 4f55ec4b84998670bb015e5b46b10d1875709181 Mon Sep 17 00:00:00 2001
+From: perillamint <perillamint@gentoo.moe>
+Date: Thu, 8 Oct 2015 15:35:07 +0900
+Subject: [PATCH 4/5] path fix
+
+---
+ scripts/mkmodimg.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/mkmodimg.sh b/scripts/mkmodimg.sh
+index 2d87212..0acaff9 100755
+--- a/scripts/mkmodimg.sh
++++ b/scripts/mkmodimg.sh
+@@ -27,12 +27,15 @@ let BIN_SIZE=${BIN_SIZE}+1024+512 # 1 MB journal + 512 KB buffer
+ cd ${TMP_DIR}/lib
+ mkdir -p tmp
+ dd if=/dev/zero of=${BIN_NAME} count=${BIN_SIZE} bs=1024
+-mkfs.ext4 -q -F -t ext4 -b 1024 ${BIN_NAME}
++PATH=/sbin:/usr/sbin:$PATH mkfs.ext4 -q -F -t ext4 -b 1024 ${BIN_NAME}
+ sudo mount -t ext4 ${BIN_NAME} ./tmp -o loop
+ if [ "$?" != "0" ]; then
+ 	echo "Failed to mount (or sudo)"
+ 	exit 1
+ fi
++
++# Normal user cannot access tmp without it
++sudo chmod 777 ./tmp
+ cp modules/* ./tmp -rf
+ sudo -n chown root:root ./tmp -R
+ sync
+-- 
+2.4.9
+
